@@ -34,8 +34,26 @@ async function montarTabelaContatos() {
                 <td>${contato.email}</td>
                 <td>${dataFormatada}</td>
                 <td>${contato.endereco}</td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-delete">Deletar</button>
+                    <button type="button" class="btn btn-primary btn-update">Atualizar</button>
+                </td>
             </tr>
         `
+
+        // Exemplo de uso nos botões
+        tr.querySelector('.btn-delete').addEventListener('click', () => {
+            abrirModal(`Deseja realmente deletar o contato ${contato.idContato}?`, () => {
+                console.log("Deletar confirmado:", contato.idContato);
+                deletarContato(contato.idContato);
+            });
+        });
+
+        tr.querySelector('.btn-update').addEventListener('click', () => {
+            abrirModal(`Deseja atualizar o contato ${contato.idContato}?`, () => {
+                console.log("Atualizar confirmado:", contato.idContato);
+            });
+        });
 
         tbody.appendChild(tr);
     });
@@ -94,4 +112,34 @@ async function enviarFormulario(event) {
         console.error(`Erro ao fazer requisição.`);
         return;
     }
+}
+
+async function deletarContato(idContato) {
+    try {
+        const respostaAPI = await fetch(`${enderecoServidor}${endpointContatos}/${idContato}`, {
+            method: 'DELETE'
+        });
+
+        if (!respostaAPI.ok) {
+            alert('Erro ao remover contato.');
+
+            throw new Error('Erro ao fazer requisição à API.');
+        }
+
+        window.location.href = '/index.html';
+    } catch (error) {
+        console.error(`Erro ao fazer requisição.`);
+        return;
+    }
+}
+
+function abrirModal(mensagem, acao) {
+    const modalBody = document.getElementById('acaoModalBody');
+    modalBody.textContent = mensagem;
+
+    const confirmarBtn = document.getElementById('confirmarAcao');
+    confirmarBtn.onclick = acao;
+
+    const modal = new bootstrap.Modal(document.getElementById('acaoModal'));
+    modal.show();
 }
