@@ -12,18 +12,25 @@
     <link rel="stylesheet" href="/css/estilo.css">
 </head>
 
-<body>
+<body onload="buscarContato()">
     <ul class="nav nav-tabs">
         <li class="nav-item">
             <a class="nav-link" aria-current="page" href="/index.html">Home</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" href="/cadastro.html">Cadastro</a>
+            <a class="nav-link" href="/cadastro.html">Cadastro</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="/atulizar.html">Atualizar</a>
         </li>
     </ul>
-    <h1 class="text-primary">Cadastro</h1>
+    <h1 class="text-primary">Atualizar Contato</h1>
 
-    <form action="" method="post" onsubmit="enviarFormulario(event)">
+    <form action="" method="post" onsubmit="enviarFormularioAtualizacao(event)">
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="floatingInputId" placeholder="ID Contato" disabled>
+            <label for="floatingInput">ID Contato</label>
+        </div>
         <div class="form-floating mb-3">
             <input type="text" class="form-control" id="floatingInputNome" placeholder="Nome completo" required>
             <label for="floatingInput">Nome completo *</label>

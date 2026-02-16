@@ -52,6 +52,7 @@ async function montarTabelaContatos() {
         tr.querySelector('.btn-update').addEventListener('click', () => {
             abrirModal(`Deseja atualizar o contato ${contato.idContato}?`, () => {
                 console.log("Atualizar confirmado:", contato.idContato);
+                window.location.href = `../atualizar.html?idContato=${contato.idContato}`
             });
         });
 
@@ -142,4 +143,95 @@ function abrirModal(mensagem, acao) {
 
     const modal = new bootstrap.Modal(document.getElementById('acaoModal'));
     modal.show();
+}
+
+async function buscarContato() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const idContato = urlParams.get('idContato');
+
+    try {
+        const respostaAPI = await fetch(`${enderecoServidor}${endpointContatos}/${idContato}`);
+
+        if (!respostaAPI.ok) {
+            console.error(`Erro na requisição: ${respostaAPI.status} - ${await respostaAPI.text()}`);
+            return;
+        }
+
+        const jsonContato = await respostaAPI.json();
+
+        preencherFormsAtualizacao(jsonContato);
+    } catch (error) {
+        // Caso ocorra algum erro na requisição ou no processamento, exibe um alerta ao usuário
+        alert('Erro ao buscar informações do contato.');
+
+        // Exibe o erro completo no console para facilitar o diagnóstico durante o desenvolvimento
+        console.error(`Erro ao buscar informações do contato. ${error}`);
+
+        // Encerra a função retornando vazio
+        return;
+    }
+}
+
+async function preencherFormsAtualizacao(contato) {
+    document.getElementById('floatingInputId').value = contato.idContato;
+    document.getElementById('floatingInputNome').value = contato.nome;
+    document.getElementById('floatingInputTelefone').value = contato.telefone;
+    document.getElementById('floatingInputEmail').value = contato.email;
+    // Converter para yyyy-MM-dd
+    if (contato.aniversario) {
+        const data = new Date(contato.aniversario);
+        const yyyy = data.getFullYear();
+        const mm = String(data.getMonth() + 1).padStart(2, '0');
+        const dd = String(data.getDate()).padStart(2, '0');
+        document.getElementById('floatingInputAniversario').value = `${yyyy}-${mm}-${dd}`;
+    }
+    document.getElementById('floatingInputEndereco').value = contato.endereco;
+}
+
+async function enviarFormularioAtualizacao(event) {
+    // Impede que o formulário seja enviado da forma tradicional (recarregando a página)
+    event.preventDefault();
+
+    // Cria um objeto cliente com os dados preenchidos no formulário
+    const contato = {
+        idContato: document.getElementById('floatingInputId').value,
+        nome: document.getElementById('floatingInputNome').value,
+        telefone: document.getElementById('floatingInputTelefone').value,
+        email: document.getElementById('floatingInputEmail').value,
+        aniversario: document.getElementById('floatingInputAniversario').value,
+        endereco: document.getElementById('floatingInputEndereco').value
+    };
+
+    // Inicia um bloco try/catch para tratar possíveis erros na requisição
+    try {
+        // Envia uma requisição HTTP PUT para a API, atualizando os dados do cliente
+        const respostaAPI = await fetch(`${enderecoServidor}${endpointContatos}/${contato.idContato}`, {
+            method: 'PUT', // método HTTP usado para atualizar dados
+            headers: {
+                'Content-type': 'application/json' // informa que os dados estão no formato JSON
+            },
+            body: JSON.stringify(contato) // transforma o objeto cliente em uma string JSON para envio
+        });
+
+        // Verifica se a resposta da API foi bem-sucedida
+        if (!respostaAPI.ok) {
+            // Exibe um alerta informando que houve erro na atualização
+            alert('Erro ao atualizar contato.');
+
+            // Exibe no console um erro com o código de status da resposta e o texto retornado pela API.
+            // Isso ajuda a identificar o motivo da falha na requisição.
+            console.error('Erro na requisição:', respostaAPI.status, await respostaAPI.text());
+        }
+
+        // Exibe um alerta informando que o cliente foi atualizado com sucesso
+        alert('contato atualizado com sucesso');
+
+        // Redireciona o usuário para a página de lista de clientes
+        window.location.href = '/index.html';
+    } catch (error) {
+        // Caso ocorra algum erro, exibe uma mensagem no console para ajudar na depuração
+        console.error('Erro ao fazer requisição.');
+        return;
+    }
 }
